@@ -23,6 +23,39 @@ $body = @{
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/generate" -Method Post -Body $body -ContentType "application/json" -OutFile "generated image path"
 ```
 
+or
+
+```powershell
+function Get-Flux {
+    param([string]$prompt)
+    
+    # 1. Turn off PowerShell's laggy visual progress bar
+    $oldProgress = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
+    
+    $body = @{ prompt = $prompt; mode = "generate" } | ConvertTo-Json
+    $fileName = "$PWD\flux_$(Get-Date -Format 'HHmmss').png"
+    
+    Write-Host "🎨 Generating: '$prompt'..." -ForegroundColor Cyan
+    Write-Host "⏳ (Your RTX 5060 Ti is drawing the image. This takes ~5 to 10 seconds...)" -ForegroundColor DarkGray
+    
+    # Send request (will now save instantly once the GPU is done)
+    Invoke-RestMethod -Uri "http://127.0.0.1:8000/generate" -Method Post -Body $body -ContentType "application/json" -OutFile $fileName
+    
+    Write-Host "✅ Done! Opening $fileName..." -ForegroundColor Green
+    Invoke-Item $fileName
+    
+    # 2. Turn the standard progress bar back on for normal Windows tasks
+    $ProgressPreference = $oldProgress
+}
+```
+
+then
+
+```powershell
+Get-Flux prompt
+```
+
 post a request(python):
 
 ```bash
