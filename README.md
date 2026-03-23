@@ -67,7 +67,7 @@ pip install requests
 import requests
 
 url = 'http://127.0.0.1:8000/generate'
-payload = {'prompt': prompt, 'mode': 'generate')
+payload = {'prompt': prompt, 'mode': 'generate'}
 
 response = requests.post(url, json=payload)
 
