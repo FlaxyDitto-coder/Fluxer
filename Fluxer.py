@@ -40,7 +40,7 @@ pipeline_i2i = AutoPipelineForImage2Image.from_pipe(pipeline_t2i)
 print("⚡ Compiling Transformer for maximum speed...")
 print("   (Note: The VERY FIRST image generated will take 1-3 minutes to compile. Everything after will be instant!)")
 # FLUX uses a transformer, not a UNet
-pipeline_t2i.transformer = torch.compile(pipeline_t2i.transformer, mode="reduce-overhead", fullgraph=True)
+pipeline_t2i.transformer.forward = torch.compile(pipeline_t2i.transformer.forward, mode="reduce-overhead", fullgraph=True)
 
 print("✅ Engine Ready! Listening on http://127.0.0.1:8000")
 
