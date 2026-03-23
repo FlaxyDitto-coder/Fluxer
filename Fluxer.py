@@ -39,7 +39,6 @@ pipeline_i2i = AutoPipelineForImage2Image.from_pipe(pipeline_t2i)
 
 print("⚡ Compiling Transformer for maximum speed...")
 print("   (Note: The VERY FIRST image generated will take 1-3 minutes to compile. Everything after will be instant!)")
-# FLUX uses a transformer, not a UNet
 
 print("✅ Engine Ready! Listening on http://127.0.0.1:8000")
 
