@@ -32,7 +32,7 @@ pipeline_t2i = AutoPipelineForText2Image.from_pretrained(
 )
 
 # Enable VRAM offloading for 16GB cards
-pipeline_t2i.enable_model_cpu_offload() 
+pipeline_t2i.to(DEVICE)
 
 # Connect the image-to-image pipeline AFTER offloading
 pipeline_i2i = AutoPipelineForImage2Image.from_pipe(pipeline_t2i)
