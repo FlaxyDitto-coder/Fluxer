@@ -1,118 +1,75 @@
-# Fluxer
-Use Flux.2-klein-4b locally on you device. Post through powershell or an app to generate an image. This app runs on http://127.0.0.1:8000 on your device(localhost). Fluxer do have some hardware requirements. You need to read the Readme.md to use it.
+A blazing-fast, 16GB-optimized FLUX Text-to-Image engine with a sleek Web GUI. Features local LoRA hot-swapping, structural edge-tracing, dynamic wildcards, and exact-math Tensor Core 4x upscaling—all running offline on your local hardware.
 
-if you want that you will be able to access it from all device IPs that you are connected to and they are free then change in the last line(    uvicorn.run(app, host="127.0.0.1", port=8000), change 127.0.0.1 to 0.0.0.0
+# 🎨 Fluxer Pro Engine 
 
-Sys req: ~13GB of Vram, ~24-32GB of RAM(sometimes required).
-My Hardware: RTX 5060 TI 16GB, 32GB of Sys Ram. on my device it runs on 4 steps in 5-10s
+Fluxer is a highly optimized, production-grade AI image generation server built around the massive FLUX Transformer model. It is specifically engineered to squeeze a 16GB+ AI pipeline into consumer-grade hardware (like an RTX 5060 Ti) without crashing, spilling over into slow system RAM, or bottlenecking. 
 
-Model is from hf.co(hugging face), provided by black-forest-labs.
-To run: pip install torch torchvision --index-url https://download.pytorch.org/whl/ cpu(for cpu(sys ram and slow))/cu{128-130}(for cuda)/mps(for apple silicon)
-pip install diffusers fastapi pydantic pillow uvicorn xformers
+It comes with a built-in dark-mode Web GUI, WebSockets for live progress tracking, and a self-healing auto-installer.
 
-python3 Fluxer.py.
+## ✨ Features
+* **Hyper-Optimized Memory:** Uses native `bfloat16`, Flash Attention, smart CPU offloading, and VAE tiling to prevent 100% VRAM crashes.
+* **The "Holy Grail" Windows Fix:** Bypasses the infamous Windows 260-character path limit that normally breaks Triton and Flash Attention, ensuring ultra-fast generation speeds.
+* **Exact-Math Tensor Core Upscaling:** Integrates `AuraSR` for local, offline 4x upscaling. Calculates the perfect "seed" resolution backwards so your final image perfectly hits your target resolution without wasting VRAM.
+* **Native Structure Control:** Upload an image and toggle "Edge Tracing". Fluxer uses OpenCV Canny Edge detection to force the AI to paint over the exact silhouette of your original photo.
+* **Local LoRA Hot-Swapping:** Select "Anime," "Realism," or "Studio Ghibli" from the dashboard. Fluxer downloads the weights once, injects them for your generation, and unloads them instantly to save memory.
+* **Dynamic Wildcards:** Supports `{a|b|c}` syntax in your prompts for massive combinatorial batch generation.
 
-run pip install... when you are using a different device/virtual enviroment
+## 💻 System Requirements
+* **OS:** Windows 11 / 10 (or Linux)
+* **GPU:** NVIDIA RTX Graphics Card with at least **16GB VRAM** (e.g., RTX 4080, 5060 Ti). 
+* **RAM:** 32GB System RAM recommended.
+* **Python:** 3.10 or higher.
+* **Storage:** ~25GB of free space (for the FLUX model, upscaler, and LoRAs).
 
-post a request(powershell):
+## 🚀 Installation & Usage
 
-```powershell 
-powershell
-$body = @{
-  prompt = ""
-} | ConvertTo-Json
-# Use ConvertTo-Json, it is required. you must fill the prompt key
-Invoke-RestMethod -Uri "http://127.0.0.1:8000/generate" -Method Post -Body $body -ContentType "application/json" -OutFile "generated image path"
-```
+Fluxer is designed to be as plug-and-play as possible. It includes a self-healing auto-installer that will download missing dependencies (like `aura-sr`, `cv2`, and `websockets`) the first time you run it.
 
-or
+1. **Install Core PyTorch & Diffusers:**
+   Open your terminal and install the absolute core requirements:
+   ```bash
+   pip install torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/cu121](https://download.pytorch.org/whl/cu121)
+   pip install diffusers transformers accelerate fastapi uvicorn pydantic pillow
+   ```
 
-```powershell
-function Get-Flux {
-    param([string]$prompt)
-    
-    # 1. Turn off PowerShell's laggy visual progress bar
-    $oldProgress = $ProgressPreference
-    $ProgressPreference = 'SilentlyContinue'
-    
-    $body = @{ prompt = $prompt; } | ConvertTo-Json
-    $fileName = "$PWD\flux_$(Get-Date -Format 'HHmmss').png"
-    
-    Write-Host "🎨 Generating: '$prompt'..." -ForegroundColor Cyan
-    Write-Host "⏳ (Your RTX 5060 Ti is drawing the image. This takes ~5 to 10 seconds...)" -ForegroundColor DarkGray
-    
-    # Send request (will now save instantly once the GPU is done)
-    Invoke-RestMethod -Uri "http://127.0.0.1:8000/generate" -Method Post -Body $body -ContentType "application/json" -OutFile $fileName
-    
-    Write-Host "✅ Done! Opening $fileName..." -ForegroundColor Green
-    Invoke-Item $fileName
-    
-    # 2. Turn the standard progress bar back on for normal Windows tasks
-    $ProgressPreference = $oldProgress
-}
-```
+2. **Run the Engine:**
+   Save the code as `fluxer.py` and run it:
+   ```bash
+   python fluxer.py
+   ```
+   *Note: On the very first run, it will automatically download the FLUX.2-klein model (~14GB).*
 
-then
+3. **Open the GUI:**
+   Once the console says `✅ Engine Ready!`, open your web browser and go to:
+   **`http://127.0.0.1:8000/GUI`**
 
-```powershell
-Get-Flux prompt
-```
+## 📖 How to Use the GUI
 
-post a request(python):
+* **Standard Generation:** Type a prompt, set your resolution (must be multiples of 32, e.g., `1024x1024` or `896x1152`), and hit Generate.
+* **Upscaling:** Type a massive resolution into the Upscale box (e.g., `2048x2048` or `3840x2160`). Fluxer will calculate the math, generate a seed image, and pass it through the Tensor Core upscaler.
+* **Structure Override (ControlNet Alternative):** Upload any photo using the "Image Upload" button and check the **Enable Edge Tracing** box. Type a prompt describing what you want the new image to be, and Fluxer will use the edges of your photo as a strict wireframe.
+* **Batches & Wildcards:** Check **Enable Wildcards**, set your batches to `4`, and use brackets in your prompt.
 
+### 🎲 Wildcard Example Prompt
+Try pasting this into the GUI with Wildcards enabled and Batches set to 4:
+> "A highly detailed cinematic portrait of a {cyberpunk | steampunk | high fantasy} {samurai | cyborg | mage}, wearing {ornate glowing armor | a ragged trench coat}, standing in a {rainy neon-lit alleyway | ruined gothic cathedral}. 8k resolution, masterpiece."
+
+## 📡 API Usage (cURL / Node.js)
+
+Fluxer acts as a headless API if you don't want to use the GUI. You can send JSON payloads to the `/generate` endpoint.
+
+**Basic Request:**
 ```bash
-pip install requests
+curl -X POST "[http://127.0.0.1:8000/generate](http://127.0.0.1:8000/generate)" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A glowing neon coffee cup", "resolution": "1024x1024", "steps": 4}' \
+  -o "output.png"
 ```
 
-```python
-import requests
-
-url = 'http://127.0.0.1:8000/generate'
-payload = {'prompt': prompt}
-
-response = requests.post(url, json=payload)
-
-if response.status_code == 200:
-  with open("Generated_image.png", wb) as f:
-    f.write(response.content)
-  print("Image generated successfully.")
-else:
-  print(f"Failed to generate image. Status: {response.status_code}")
-```
-
-post a request(node.js):
-
+**Godmode Request (Upscaling + LoRA + Batches):**
 ```bash
-npm install axios
-```
-
-```javascript
-const axios = require('axios')
-const fs = require('fs')
-
-async function generateAndSaveImage() {
-  const url = 'http://127.0.0.1:8000/generate'
-  const payload = { prompt: prompt }
-
-  try {
-    const response = await axios.post(url, payload, {
-      responseType: 'arraybuffer'
-    });
-
-    fs.writeFileSync('generated_image.png', response.data);
-    console.log('Image saved successfully as generated_image.png');
-  } catch (error) {
-      console.error('Error generating image:', error.message);
-    }
-}
-
-generateAndSaveImage();
-```
-
-
-Model hugging face page: https://hf.co/black-forest-labs/Flux.2-klein-4b
-
-
-
-
-##### just a shoutout for black-forest-labs for creating this great AI model!!!!!🥳
+curl -X POST "[http://127.0.0.1:8000/generate](http://127.0.0.1:8000/generate)" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A {red|blue|green} sports car", "dynamic_wildcards": true, "batches": 3, "style": "realism", "upscale": "2048x2048"}' \
+  -o "car.png"
+``` 
